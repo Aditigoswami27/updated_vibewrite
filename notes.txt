@@ -1,0 +1,60 @@
+📌 <InputBox onSubmit={handleSubmit} />
+This is how we pass props from parent to child.
+
+Parent (App.js) has the logic
+
+It gives that logic to child (InputBox) via props
+
+So when child calls onSubmit(...), it’s actually running the parent’s function
+
+🧩 App.js breakdown:
+   Displays heading
+
+   Renders InputBox
+
+   Passes the handleSubmit function to it
+
+    Whenever InputBox's button is clicked, that function gets triggered!
+
+You’re capturing the submitted text + tone, adding a timestamp.
+
+Storing them in messages using React’s useState.
+
+Showing each message below your input.
+
+useEffect -Runs on load and when data changes
+/runs a special function (or "effect") after a component mounts or when data updates. This function can be used to perform tasks like saving data to a database, loading new data, or even updating the component itself.
+
+useRef – Points to elements on screen (like "scroll to bottom")./Keeps scroll pinned to the latest message
+localStorage	Saves chat history even after refresh
+messages is an array of objects (each with original, rewritten, timestamp).
+
+setMessages updates that array.
+
+navigator.clipboard: This is an object that allows you to interact with the system clipboard. Think of it like a digital "clipboard" where you can store and retrieve text or other data.
+writeText(text): This is a method that takes a string of text (text) as an argument and writes it to the clipboard. When you call this method, the text will be copied to the clipboard, so you can paste it into another application.
+
+Details:
+
+model: Kaunsa AI model use karna hai.
+
+messages: Chat-style input. Pehle system role, then user input.
+
+temperature: Creativity level. 0 = boring/precise. 1 = spicy/creative. 0.7 = best of both worlds.
+
+"Content-Type": Tells server you're sending JSON.
+
+Authorization: Your API key (from env variable, so it's not public).
+
+HTTP-Referer: Tells OpenRouter where this request is coming from (your site).
+
+"X-Title": Optional meta info. You named your app VibeWrite ✨
+
+esponse.data: This refers to an object that contains data, likely received from a server or API.
+choices: This is a property within the response.data object, which contains an array of values.
+message.content: This is a nested property within the first item in the choices array. It's like opening a folder within a folder to access a specific file.
+
+messagesEndRef is a reference to an empty <div /> at the bottom of your chat.
+
+When new messages are added, you call messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }) to scroll down.
+
