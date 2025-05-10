@@ -8,29 +8,38 @@ import "react-toastify/dist/ReactToastify.css";
 function App() {
   const [messages, setMessages] = useState([]);
   const [darkMode,setDarkMode] =useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [isStorageLoaded, setIsStorageLoaded] = useState(false);
   const messagesEndRef = useRef(null);
 
   //load saved messages from localstorage,runs only once when the page loads
-  useEffect(()=>{  
-    const saved =localStorage.getItem("vibewrite-history");
-    if (saved){
-      setMessages(JSON.parse(saved)); 
-      //If saved data exists, parse it and use it to initialize messages.
+  useEffect(() => {
+    const saved = localStorage.getItem("vibewrite-history");
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      const withDates = parsed.map(msg => ({
+        ...msg,
+        date: msg.date || new Date(msg.timeStamp).toLocaleDateString()
+      }));
+      setMessages(withDates);
     }
-    
-    const savedTheme = localStorage.getItem("vibewrite-theme");
-    if(savedTheme==="dark"){
-        setDarkMode(true);
-        document.body.classList.add("dark");
-    }
-  },[]);
-
-  //Runs every time messages changes.Saves updated list into browser memory.
-  useEffect(()=>{
-    localStorage.setItem("vibewrite-history",JSON.stringify(messages));
-    scrollToBottom(); //Scrolls to the bottom so user sees latest message.
-    },[messages]);
+    setIsStorageLoaded(true); // ✅ mark when localStorage is ready
   
+    const savedTheme = localStorage.getItem("vibewrite-theme");
+    if (savedTheme === "dark") {
+      setDarkMode(true);
+      document.body.classList.add("dark");
+    }
+  }, []);  
+  
+  useEffect(() => {
+    if (!isStorageLoaded) return; // 🛑 Don't save until we’ve loaded once
+    console.log("Trying to save to localStorage:", messages);
+    localStorage.setItem("vibewrite-history", JSON.stringify(messages));
+    scrollToBottom();
+  }, [messages, isStorageLoaded]);
+  
+  //Runs every time messages changes.Saves updated list into browser memory.
   useEffect(()=>{
     document.body.classList.toggle("dark",darkMode);
     localStorage.setItem("vibewrite-theme",darkMode? "dark":"light");
@@ -96,10 +105,10 @@ function App() {
       toast.error("Edit failed. Try again.");
     }
     };
-
+  console.log("ENV KEY:", process.env.REACT_APP_OPENROUTER_KEY);
   //You're sending a request to OpenRouter and updating state with the response.
   const handleSubmit = async (text, mode) => {
-
+    
     const prompt = `Rewrite the following message in a ${mode} tone:\n"${text}"`;
 
     try {
@@ -157,33 +166,59 @@ function App() {
       <h1 className="title">
         VibeWrite <span>✨</span>
       </h1>
+      <div className="toggle-container">
+  <button className="dark-toggle" onClick={() => setDarkMode(prev => !prev)}>
+    {darkMode ? "☀️ Light Mode" : "🌙 Dark Mode"}
+  </button>
+  <button className="view-toggle" onClick={() => setShowHistory(prev => !prev)}>
+    {showHistory ? "📝 Back to Writing" : "📜 View History"}
+  </button>
+</div>
 
       <button className="dark-toggle" onClick={() => setDarkMode(prev => !prev)}>
         {darkMode ? "☀️ Light Mode" : "🌙 Dark Mode"}
       </button>
-
-      <InputBox onSubmit={handleSubmit} />
-
-      <div className="messages">
-        {Object.keys(groupedByDate).map(date => (
-          <div key={date}>
-            <h3 className="date-label">{date}</h3>
-            {groupedByDate[date].map((msg, idx) => (
-              <div key={idx} className="message-card">
-                <strong>Original:</strong> {msg.original}<br />
-                <strong>{msg.mode} tone:</strong> {msg.rewritten}
-                <div className="button-group">
-                  <button className="copy-btn" onClick={() => handleCopy(msg.rewritten)}>📋</button>
-                  <button className="edit-btn" onClick={() => handleEdit(messages.indexOf(msg))}>✏️</button>
-                  <button className="delete-btn" onClick={() => handleDelete(messages.indexOf(msg))}>🗑️</button>
-                </div>
-                <div className="timestamp">{msg.timeStamp}</div>
+      
+      {!showHistory ? (
+  <>
+    <InputBox onSubmit={handleSubmit} />
+    <div className="messages">
+      {Object.keys(groupedByDate).map(date => (
+        <div key={date}>
+          <h3 className="date-label">{date}</h3>
+          {groupedByDate[date].map((msg, idx) => (
+            <div key={idx} className="message-card">
+              <strong>Original:</strong> {msg.original}<br />
+              <strong>{msg.mode} tone:</strong> {msg.rewritten}
+              <div className="button-group">
+                <button className="copy-btn" onClick={() => handleCopy(msg.rewritten)}>📋</button>
+                <button className="edit-btn" onClick={() => handleEdit(messages.indexOf(msg))}>✏️</button>
+                <button className="delete-btn" onClick={() => handleDelete(messages.indexOf(msg))}>🗑️</button>
               </div>
-            ))}
-          </div>
-        ))}
-        <div ref={messagesEndRef} />
-      </div>
+              <div className="timestamp">{msg.timeStamp}</div>
+            </div>
+          ))}
+        </div>
+      ))}
+      <div ref={messagesEndRef} />
+    </div>
+  </>
+) : (
+  <div className="history-view">
+    <h2>Prompt History 📜</h2>
+    {messages.length === 0 ? <p>No saved prompts yet.</p> : (
+      messages.map((msg, idx) => (
+        <div key={idx} className="history-card">
+          <strong>Original:</strong> {msg.original}<br />
+          <strong>{msg.mode} tone:</strong> {msg.rewritten}<br />
+          <small>{msg.timeStamp}</small>
+          <hr />
+        </div>
+      ))
+    )}
+  </div>
+)}
+
     </div>
   );
 }

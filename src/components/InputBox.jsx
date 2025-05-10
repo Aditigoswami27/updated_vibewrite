@@ -43,7 +43,7 @@ const InputBox =({onSubmit})=>{ //onSubmit is a prop here whose value is accepte
                             </option>
                     ))}
                 </select>
-                <button onClick={handleSubmit}>Send</button>
+                <button onClick={handleSubmit} type="submit">Send</button>
             </div>
         </div>
     );
