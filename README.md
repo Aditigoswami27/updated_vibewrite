@@ -1,4 +1,4 @@
-#VibeWrite ✍️
+#**VibeWrite ✍️**
 
 **VibeWrite** is a React-based web app that helps you rewrite your messages in different tones — whether you want to sound friendly, sarcastic, flirty, or just way more professional than you feel.  
 It’s powered by the OpenRouter API (GPT-3.5 Turbo under the hood) and keeps things snappy with no backend — all data stays local.
